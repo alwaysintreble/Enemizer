@@ -177,16 +177,31 @@ namespace EnemizerLibrary
             var spriteGroup = spriteGroupCollection.SpriteGroups.First(x => x.GroupId == this.GraphicsBlockId);
 
             var possibleSprites = spriteGroup.GetPossibleEnemySprites(this, optionFlags).Select(x => x.SpriteId).ToArray();
+            var replacePossibleSprites = new List<int>();
+            foreach (var enemy in optionFlags.PlandoEnemies)
+            {
+                var spriteID = SpriteConstants.spriteNames.First(x => x.Value == enemy).Key;
+                if (possibleSprites.Contains(spriteID))
+                {
+                    replacePossibleSprites.Add(spriteID);
+                }
+            }
+            var plandoPossibleSprites = replacePossibleSprites.ToArray();
 
             if (possibleSprites.Length > 0)
             {
                 var spritesToUpdate = this.Sprites.Where(x => spriteRequirementCollection.RandomizableSprites.Select(y => y.SpriteId).Contains(x.SpriteId))
                     .ToList();
+                if (plandoPossibleSprites.Length > 0)
+                {
+                    spritesToUpdate.ToList().ForEach(x => x.SpriteId = plandoPossibleSprites[rand.Next(plandoPossibleSprites.Length)]);
+                }
+                else
+                {
+                    spritesToUpdate.ToList().ForEach(x => x.SpriteId = possibleSprites[rand.Next(possibleSprites.Length)]);
+                }
 
-                spritesToUpdate/*.Where(x => x.SpriteId != SpriteConstants.RavenSprite)*/.ToList()
-                    .ForEach(x => x.SpriteId = possibleSprites[rand.Next(possibleSprites.Length)]);
-
-                if (spritesToUpdate.Count(x => x.SpriteId == SpriteConstants.FloppingFishSprite) > 1)
+                if (spritesToUpdate.Count(x => x.SpriteId == SpriteConstants.FloppingFishSprite) > 1 && plandoPossibleSprites.Length == 0)
                 {
                     possibleSprites = possibleSprites.Where(x => x != SpriteConstants.FloppingFishSprite).ToArray();
 
