@@ -240,6 +240,16 @@ namespace EnemizerLibrary
             spriteGroup = spriteGroupCollection.SpriteGroups.First(x => x.DungeonGroupId == this.GraphicsBlockId);
 
             possibleSprites = spriteGroup.GetPossibleEnemySprites(this, optionFlags).Select(x => x.SpriteId).ToArray();
+            var replacePossibleSprites = new List<int>();
+            foreach (var enemy in optionFlags.PlandoEnemies)
+            {
+                var spriteID = SpriteConstants.spriteNames.First(x => x.Value == enemy).Key;
+                if (possibleSprites.Contains(spriteID))
+                {
+                    replacePossibleSprites.Add(spriteID);
+                }
+            }
+            var plandoPossibleSprites = replacePossibleSprites.ToArray();
 
             if (possibleSprites.Length > 0)
             {
@@ -249,10 +259,26 @@ namespace EnemizerLibrary
                 // TODO: something less hacky for shutters.
                 var keySprites = spritesToUpdate.Where(x => x.HasAKey).ToList();
                 var shutterSprites = spritesToUpdate.Where(x => this.IsShutterRoom && !x.HasAKey).ToList();
+                var killableSprites = new List<int>();
+                var killableKeySprites = new List<int>();
+                var waterSprites = new List<int>();
 
-                var killableSprites = spriteRequirementCollection.KillableSprites.Where(x => possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
-                var killableKeySprites = spriteRequirementCollection.KillableSprites.Where(x => x.CannotHaveKey == false && possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
-                var waterSprites = spriteRequirementCollection.WaterSprites.Where(x => possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                killableSprites = spriteRequirementCollection.KillableSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                killableKeySprites = spriteRequirementCollection.KillableSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                waterSprites = spriteRequirementCollection.WaterSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+
+                if (killableSprites.Count < 1)
+                {
+                    killableSprites = spriteRequirementCollection.KillableSprites.Where(x => possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                }
+                if (killableKeySprites.Count < 1)
+                {
+                    killableKeySprites = spriteRequirementCollection.KillableSprites.Where(x => x.CannotHaveKey == false && possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                }
+                if (waterSprites.Count < 1)
+                {
+                    waterSprites = spriteRequirementCollection.WaterSprites.Where(x => possibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                }
 
                 if (keySprites.Count > 0 && killableKeySprites.Count == 0)
                 {
@@ -286,6 +312,7 @@ namespace EnemizerLibrary
                 {
                     // remove water sprites
                     possibleSprites = possibleSprites.Where(x => waterSprites.Contains(x) == false).ToArray();
+                    plandoPossibleSprites = plandoPossibleSprites.Where(x => waterSprites.Contains(x) == false).ToArray();
                 }
 
                 foreach (var s in spritesToUpdate.Where(x => x.HasAKey == false).ToList())
@@ -293,14 +320,35 @@ namespace EnemizerLibrary
                     int spriteId = -1;
 
                     // don't put stal in shutter rooms
-                    if (false == this.IsShutterRoom && rand.Next(0, 100) <= 5)
+                    if (!IsShutterRoom && rand.Next(0, 100) <= 5)
                     {
-                        //spawn a stal
-                        spriteId = SpriteConstants.StalSprite;
+                        // spawn a stal
+                        if (plandoPossibleSprites.Length > 0)
+                        {
+                            if (optionFlags.PlandoEnemies.Contains("Stal"))
+                            {
+                                spriteId = SpriteConstants.StalSprite;
+                            }
+                            else
+                            {
+                                spriteId = plandoPossibleSprites[rand.Next(plandoPossibleSprites.Length)];
+                            }
+                        }
+                        else
+                        {
+                            spriteId = SpriteConstants.StalSprite;
+                        }
                     }
                     else
                     {
-                        spriteId = possibleSprites[rand.Next(possibleSprites.Length)];
+                        if (plandoPossibleSprites.Length > 0)
+                        {
+                            spriteId = plandoPossibleSprites[rand.Next(plandoPossibleSprites.Length)];
+                        }
+                        else
+                        {
+                            spriteId = possibleSprites[rand.Next(possibleSprites.Length)];
+                        }
                     }
 
                     if (optionFlags.EnemiesAbsorbable && optionFlags.AbsorbableSpawnRate > 0 && optionFlags.AbsorbableTypes.Where(x => x.Value).Count() > 0)
