@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace EnemizerLibrary
 {
@@ -8,6 +9,8 @@ namespace EnemizerLibrary
     {
         public bool RandomizeEnemies { get; set; } = true;
         public RandomizeEnemiesType RandomizeEnemiesType { get; set; } = RandomizeEnemiesType.Chaos; // default to Chaos
+        [JsonProperty("PlandoEnemies")]
+        public List<string> PlandoEnemies { get; set; } = new List<string>();
         public bool RandomizeBushEnemyChance { get; set; } = true;
 
         public bool RandomizeEnemyHealthRange { get; set; }
