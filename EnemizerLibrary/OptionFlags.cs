@@ -9,8 +9,8 @@ namespace EnemizerLibrary
     {
         public bool RandomizeEnemies { get; set; } = true;
         public RandomizeEnemiesType RandomizeEnemiesType { get; set; } = RandomizeEnemiesType.Chaos; // default to Chaos
-        [JsonProperty("PlandoEnemies")]
-        public List<string> PlandoEnemies { get; set; } = new List<string>();
+        [JsonProperty("EnemyPool")]
+        public List<int> EnemyPool { get; set; } = new List<int>();
         public bool RandomizeBushEnemyChance { get; set; } = true;
 
         public bool RandomizeEnemyHealthRange { get; set; }

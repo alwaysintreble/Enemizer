@@ -240,16 +240,14 @@ namespace EnemizerLibrary
             spriteGroup = spriteGroupCollection.SpriteGroups.First(x => x.DungeonGroupId == this.GraphicsBlockId);
 
             possibleSprites = spriteGroup.GetPossibleEnemySprites(this, optionFlags).Select(x => x.SpriteId).ToArray();
-            var replacePossibleSprites = new List<int>();
-            foreach (var enemy in optionFlags.PlandoEnemies)
+            var replaceableSprites = new List<int>();
+            foreach (var enemy in optionFlags.EnemyPool)
             {
-                var spriteID = SpriteConstants.spriteNames.First(x => x.Value == enemy).Key;
-                if (possibleSprites.Contains(spriteID))
+                if (possibleSprites.Contains(enemy))
                 {
-                    replacePossibleSprites.Add(spriteID);
+                    replaceableSprites.Add(enemy);
                 }
             }
-            var plandoPossibleSprites = replacePossibleSprites.ToArray();
 
             if (possibleSprites.Length > 0)
             {
@@ -263,9 +261,9 @@ namespace EnemizerLibrary
                 var killableKeySprites = new List<int>();
                 var waterSprites = new List<int>();
 
-                killableSprites = spriteRequirementCollection.KillableSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
-                killableKeySprites = spriteRequirementCollection.KillableSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
-                waterSprites = spriteRequirementCollection.WaterSprites.Where(x => plandoPossibleSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                killableSprites = spriteRequirementCollection.KillableSprites.Where(x => replaceableSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                killableKeySprites = spriteRequirementCollection.KillableSprites.Where(x => replaceableSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
+                waterSprites = spriteRequirementCollection.WaterSprites.Where(x => replaceableSprites.Contains(x.SpriteId)).Select(x => x.SpriteId).ToList();
 
                 if (killableSprites.Count < 1)
                 {
@@ -312,7 +310,7 @@ namespace EnemizerLibrary
                 {
                     // remove water sprites
                     possibleSprites = possibleSprites.Where(x => waterSprites.Contains(x) == false).ToArray();
-                    plandoPossibleSprites = plandoPossibleSprites.Where(x => waterSprites.Contains(x) == false).ToArray();
+                    replaceableSprites = replaceableSprites.Where(x => waterSprites.Contains(x) == false).ToList();
                 }
 
                 foreach (var s in spritesToUpdate.Where(x => x.HasAKey == false).ToList())
@@ -323,15 +321,15 @@ namespace EnemizerLibrary
                     if (!IsShutterRoom && rand.Next(0, 100) <= 5)
                     {
                         // spawn a stal
-                        if (plandoPossibleSprites.Length > 0)
+                        if (replaceableSprites.Count> 0)
                         {
-                            if (optionFlags.PlandoEnemies.Contains("Stal"))
+                            if (replaceableSprites.Contains(SpriteConstants.StalSprite))
                             {
                                 spriteId = SpriteConstants.StalSprite;
                             }
                             else
                             {
-                                spriteId = plandoPossibleSprites[rand.Next(plandoPossibleSprites.Length)];
+                                spriteId = replaceableSprites[rand.Next(replaceableSprites.Count)];
                             }
                         }
                         else
@@ -341,9 +339,9 @@ namespace EnemizerLibrary
                     }
                     else
                     {
-                        if (plandoPossibleSprites.Length > 0)
+                        if (replaceableSprites.Count > 0)
                         {
-                            spriteId = plandoPossibleSprites[rand.Next(plandoPossibleSprites.Length)];
+                            spriteId = replaceableSprites[rand.Next(replaceableSprites.Count)];
                         }
                         else
                         {

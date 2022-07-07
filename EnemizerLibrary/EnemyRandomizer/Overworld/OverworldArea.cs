@@ -178,12 +178,11 @@ namespace EnemizerLibrary
 
             var possibleSprites = spriteGroup.GetPossibleEnemySprites(this, optionFlags).Select(x => x.SpriteId).ToArray();
             var replacePossibleSprites = new List<int>();
-            foreach (var enemy in optionFlags.PlandoEnemies)
+            foreach (var enemy in optionFlags.EnemyPool)
             {
-                var spriteID = SpriteConstants.spriteNames.First(x => x.Value == enemy).Key;
-                if (possibleSprites.Contains(spriteID))
+                if (possibleSprites.Contains(enemy))
                 {
-                    replacePossibleSprites.Add(spriteID);
+                    replacePossibleSprites.Add(enemy);
                 }
             }
             var plandoPossibleSprites = replacePossibleSprites.ToArray();
